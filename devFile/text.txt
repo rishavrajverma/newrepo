@@ -1,0 +1,486 @@
+
+"<!DOCTYPE html>
+  <html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>JSON Data Tables</title>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' />
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css' rel='stylesheet' />
+    <style>
+
+#accordionData{
+margin-top:10px;
+}
+      .accordion-item {
+       
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .table-wrapper {
+        overflow: hidden;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .accordion-button {
+        cursor: pointer;
+        box-shadow: none !important;
+      }
+      .accordion-button:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        background-color: #f8f9fa !important;
+      }
+      .accordion-button.collapsed {
+        border: 1px solid #f8f9fa;
+        border-radius: 0.75rem;
+      }
+      .accordion-button:not(.collapsed) {
+        background-color: #f8f9fa !important;
+        border-top-left-radius: 0.75rem;
+        border-top-right-radius: 0.75rem;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+      th i {
+        margin-left: 5px;
+        cursor: pointer;
+        font-size: 0.8em;
+        color: #888;
+      }
+      .tight-icons {
+        line-height: 0.8;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+        border: 1px solid #ccc;
+        padding: 8px 10px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      th {
+        background-color: #f5f5f5;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='accordion' id='accordionData'></div>
+    <script>
+      const jsonData = " & $$tableJSON & ";
+      const groupedByCountry = {};
+      for (const station in jsonData) {
+        const entry = jsonData[station];
+        const country = entry.country;
+        if (!groupedByCountry[country]) {
+          groupedByCountry[country] = [];
+        }
+        groupedByCountry[country].push({ code: station, ...entry });
+      }
+
+      const accordion = document.getElementById('accordionData');
+      let index = 0;
+
+      for (const country in groupedByCountry) {
+        const countryId = `country-${index}`;
+        const collapseId = `collapse-${index}`;
+        const data = groupedByCountry[country];
+        const accordionItem = document.createElement('div');
+        accordionItem.className = 'accordion-item';
+        accordionItem.innerHTML = `
+          <h2 class='accordion-header' id='${countryId}'>
+            <button class='accordion-button ${index !== 0 ? 'collapsed' : ''}' type='button' data-bs-toggle='collapse' data-bs-target='#${collapseId}' aria-expanded='${index === 0}' aria-controls='${collapseId}'>
+              ${country} <span style='margin-left: 3px; font-weight: normal;'>(${data.length})</span>
+            </button>
+          </h2>
+          <div id='${collapseId}' class='accordion-collapse collapse ${index === 0 ? 'show' : ''}' aria-labelledby='${countryId}' data-bs-parent='#accordionData'>
+            <div class='accordion-body'>
+              <div class='table-wrapper'>
+                <table data-country='${country}' class='sortable-table'>
+                  <thead class='text-center align-middle'>
+                    <tr>
+                      <th class='sortable align-middle' data-key='stationcode'>
+                        <div class='d-inline-flex align-items-center gap-1 justify-content-center'>
+                          <span>Station Code</span>
+                          <div class='d-flex flex-column'>
+                            <i class='fa-solid fa-angle-up small tight-icons'></i>
+                            <i class='fa-solid fa-angle-down small tight-icons'></i>
+                          </div>
+                        </div>
+                      </th>
+                      <th class='sortable align-middle' data-key='city'>
+                        <div class='d-inline-flex align-items-center gap-1 justify-content-center'>
+                          <span>City</span>
+                          <div class='d-flex flex-column'>
+                            <i class='fa-solid fa-angle-up small tight-icons'></i>
+                            <i class='fa-solid fa-angle-down small tight-icons'></i>
+                          </div>
+                        </div>
+                      </th>
+                      <th class='sortable align-middle' data-key='country'>
+                        <div class='d-inline-flex align-items-center gap-1 justify-content-center'>
+                          <span>Country</span>
+                          <div class='d-flex flex-column'>
+                            <i class='fa-solid fa-angle-up small tight-icons'></i>
+                            <i class='fa-solid fa-angle-down small tight-icons'></i>
+                          </div>
+                        </div>
+                      </th>
+                      <th class='align-middle'>Compliance</th>
+                      <th class='align-middle'>Delays</th>
+                      <th class='align-middle'>Provisioning</th>
+                      <th class='align-middle'>Quality</th>
+                      <th class='align-middle'>Safety</th>
+                      <th class='align-middle'>Unclassified</th>
+                      <th class='align-middle'>Closed</th>
+                      <th class='align-middle'>Unresolved</th>
+                      <th class='align-middle'>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.map(row => `
+                      <tr>
+                        <td>${row.code}</td>
+                        <td>${row.city}</td>
+                        <td>${row.country}</td>
+                        <td>${row.Compliance}</td>
+                        <td>${row.Delays}</td>
+                        <td>${row.Provisioning}</td>
+                        <td>${row.Quality}</td>
+                        <td>${row.Safety}</td>
+                        <td>${row.Unclassified}</td>
+                        <td>${row.closedCount}</td>
+                        <td>${row.unresolvedCount}</td>
+                        <td>${row.totalCount}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+        accordion.appendChild(accordionItem);
+        index++;
+      }
+
+      document.addEventListener('click', function (e) {
+        const th = e.target.closest('th.sortable');
+        if (!th) return;
+        const key = th.dataset.key;
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const ascending = th.dataset.order !== 'asc';
+        th.dataset.order = ascending ? 'asc' : 'desc';
+        const colIndex = th.cellIndex;
+        rows.sort((a, b) => {
+          const aText = a.children[colIndex].textContent.trim().toLowerCase();
+          const bText = b.children[colIndex].textContent.trim().toLowerCase();
+          return ascending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        });
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    </script>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>
+  </body>
+  </html>"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  "<!DOCTYPE html>
+<html lang=\"en\">
+  <head>
+    <meta charset=\"UTF-8\" />
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .slider-container {
+        overflow: hidden;
+        position: relative;
+        margin: 0;
+      }
+
+      .slider {
+        display: flex;
+        transition: transform 0.8s ease;
+      }
+
+      .slide {
+        display: flex;
+        justify-content: space-between;
+        flex: 0 0 100%;
+        padding: 0; /* Add padding to accommodate buttons */
+        position: relative; /* Add position relative to slide */
+      }
+
+      .slider-button {
+        display: none;
+        font-size:40px;
+        position: absolute;
+        top: 25%; /* Vertically center the buttons */
+        background-color: rgba(0, 0, 0, 0);
+        color: gray;
+        border: none;
+        cursor: pointer;
+        z-index: 1000; /* Add z-index to ensure buttons are on top */
+      }
+
+      .slider-button-left {
+
+        left: 0; /* Position the left button at the start of the slide */
+      }
+
+      .slider-button-right {
+
+        right: 0; /* Position the right button at the end of the slide */
+      }
+
+      .gauge {
+        text-align: center;
+        margin: 5px;
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: #f5f5f5;
+        border-radius: 25px;
+        height: 160px;
+        width: 178px;
+        padding: 10px;
+      }
+
+      .gauge svg {
+        width: 90px;
+        height: 90px;
+      }
+
+      .gauge-value-text{
+        font-size: 23px;
+        font-weight: bold;
+        color:#3D3D3D;
+       }
+
+      .gauge-percent-text{
+       font-size: 12px;
+       line-height: 0;
+       color:#3D3D3D;
+      }
+
+     .gauge-title {
+       font-family:Rubik;
+       margin-top: 20px;
+       color: #8F8F8F;
+       line-height: 1.5;
+       }
+
+     .gauge-info {
+        font-family:Rubik;
+        color: #8F8F8F;
+      }
+
+    </style>
+  </head>
+  <body>
+   <body>
+   <button class=\"slider-button slider-button-left\">&#10094;</button>
+    <button class=\"slider-button slider-button-right\">&#10095;</button>
+    <div class=\"slider-container\">
+      <div id=\"compliance-tracking\" class=\"slider\"></div>
+    </div>
+   
+       <script>
+      document.addEventListener(\"DOMContentLoaded\", function () {
+        const jsonData ="&$$jsondata&";
+
+        let currentIndex = 0;
+        let slideWidth = 0; 
+        const gaugesPerSlide = 6; 
+        function moveSlider(direction) {
+          const container = document.querySelector(\".slider\");
+          const slides = container.querySelectorAll(\".slide\");
+          const totalSlides = slides.length;
+
+          if (direction === \"left\" && currentIndex > 0) {
+            currentIndex--;
+          } else if (direction === \"right\" && currentIndex < totalSlides - 1) {
+            currentIndex++;
+          }
+
+          const offset = -currentIndex * slideWidth;
+          container.style.transform = `translateX(${offset}px)`;
+        }
+
+        function populateGauges(gaugesData) {
+          const container = document.getElementById(\"compliance-tracking\");
+          const totalGauges = gaugesData.length;
+          const totalSlides = Math.ceil(totalGauges / gaugesPerSlide);
+
+          for (let i = 0; i < totalSlides; i++) {
+            const slide = document.createElement(\"div\");
+            slide.className = \"slide\";
+
+            for (
+              let j = i * gaugesPerSlide;
+              j < (i + 1) * gaugesPerSlide && j < totalGauges;
+              j++
+            ) {
+              const gaugeData = gaugesData[j];
+              const gauge = createGauge(gaugeData);
+              slide.appendChild(gauge);
+            }
+
+            container.appendChild(slide);
+          }
+
+          
+          slideWidth = container.querySelector(\".slide\").offsetWidth;
+        }
+
+        function getColor(value) {
+          if (value >= 75) return \"#f44336\"; 
+          if (value >= 50) return \"#ffeb3b\";
+          return \"#4caf50\"; 
+        }
+
+        function createGauge(gaugeData) {
+          const gauge = document.createElement(\"div\");
+          gauge.className = \"gauge\";
+
+          const svgNamespace = \"http://www.w3.org/2000/svg\";
+          const svg = document.createElementNS(svgNamespace, \"svg\");
+          svg.setAttribute(\"viewBox\", \"0 0 100 100\");
+
+          const circle = document.createElementNS(svgNamespace, \"circle\");
+          circle.setAttribute(\"cx\", \"50\");
+          circle.setAttribute(\"cy\", \"50\");
+          circle.setAttribute(\"r\", \"40\");
+          circle.setAttribute(\"fill\", \"none\");
+          circle.setAttribute(\"stroke\", \"#f0f0f0\");
+          circle.setAttribute(\"stroke-width\", \"10\");
+
+          const path = document.createElementNS(svgNamespace, \"path\");
+          const percentage = gaugeData.value === 100 ? 0.99 : gaugeData.value / 100;
+          const startX = 50 + 40 * Math.cos(-Math.PI / 2);
+          const startY = 50 + 40 * Math.sin(-Math.PI / 2);
+          const endX =
+            50 + 40 * Math.cos(-Math.PI / 2 + 2 * Math.PI * percentage);
+          const endY =
+            50 + 40 * Math.sin(-Math.PI / 2 + 2 * Math.PI * percentage);
+          const largeArcFlag = percentage > 0.5 ? 1 : 0;
+          const pathData = `M ${startX} ${startY} A 40 40 0 ${largeArcFlag} 1 ${endX} ${endY}`;
+          path.setAttribute(\"d\", pathData);
+          path.setAttribute(\"fill\", \"none\");
+          path.setAttribute(\"stroke\", getColor(gaugeData.value));
+          path.setAttribute(\"stroke-width\", \"9\");
+          
+
+          const textGroup = document.createElementNS(svgNamespace, \"g\");
+          textGroup.setAttribute(\"transform\", \"translate(50, 50)\");
+
+          const textValue = document.createElementNS(\"http://www.w3.org/2000/svg\", \"text\");
+
+
+
+
+
+const valueStr = gaugeData.value.toString();
+const valueLength = valueStr.length;
+
+let dxOffset = 0;
+if (valueLength <= 2) dxOffset = 8;
+else if (valueLength === 3) dxOffset = 16;
+else dxOffset = 20;
+
+textValue.setAttribute(\"x\", \"0\");
+textValue.setAttribute(\"y\", \"8\");
+textValue.setAttribute(\"text-anchor\", \"middle\");
+textValue.setAttribute(\"class\", \"gauge-value-text\");
+textValue.textContent = valueStr;
+
+const textPercentage = document.createElementNS(\"http://www.w3.org/2000/svg\", \"text\");
+textPercentage.setAttribute(\"x\", \"0\");
+textPercentage.setAttribute(\"y\", \"8\");
+textPercentage.setAttribute(\"dx\", dxOffset.toString());
+textPercentage.setAttribute(\"text-anchor\", \"start\");
+textPercentage.setAttribute(\"class\", \"gauge-percent-text\");
+textPercentage.textContent = \"%\";
+
+textGroup.appendChild(textValue);
+textGroup.appendChild(textPercentage);
+
+
+
+
+
+          
+
+          svg.appendChild(circle);
+          svg.appendChild(path);
+          svg.appendChild(textGroup);
+
+          gauge.appendChild(svg);
+
+          const title = document.createElement(\"div\");
+          title.className = \"gauge-title\";
+          title.textContent = gaugeData.title;
+          gauge.appendChild(title);
+
+          const gaugeInfo = document.createElement(\"div\");
+          gaugeInfo.className = \"gauge-info\";
+          gaugeInfo.innerHTML = `<p style=\"line-height: 0.5;\">(${gaugeData.issues} Issues)</p>`;
+          gauge.appendChild(gaugeInfo);
+
+          return gauge;
+        }
+
+      
+        document
+          .querySelector(\".slider-button-left\")
+          .addEventListener(\"click\", () => {
+            moveSlider(\"left\");
+          });
+
+        document
+          .querySelector(\".slider-button-right\")
+          .addEventListener(\"click\", () => {
+            moveSlider(\"right\");
+          });
+
+        
+        populateGauges(jsonData.gauges);
+      });
+    
+    </script>
+  </body>
+</html>"

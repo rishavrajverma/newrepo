@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gauge Slider</title>
+  <style>
+    .slider-container {
+      overflow: hidden;
+      position: relative;
+      margin: 0;
+    }
+
+    .slider {
+      display: flex;
+      transition: transform 0.8s ease;
+    }
+
+    .slide {
+      display: flex;
+      justify-content: space-between;
+      flex: 0 0 100%;
+      padding: 0;
+      position: relative;
+    }
+
+    .slider-button {
+      font-size: 40px;
+      position: absolute;
+      top: 25%;
+      background-color: rgba(0, 0, 0, 0);
+      color: gray;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .slider-button-left {
+      left: 0;
+    }
+
+    .slider-button-right {
+      right: 0;
+    }
+
+    .gauge {
+      text-align: center;
+      margin: 5px;
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      border-radius: 25px;
+      height: 190px;
+      width: 200px;
+    }
+
+    .gauge svg {
+      width: 110px;
+      height: 110px;
+    }
+
+    .gauge-value-text {
+      font-size: 23px;
+      font-weight: bold;
+      color: #3D3D3D;
+    }
+
+    .gauge-percent-text {
+      font-size: 12px;
+      line-height: 0;
+      color: #3D3D3D;
+    }
+
+    .gauge-title {
+      font-family: Rubik, sans-serif;
+      margin-top: 20px;
+      color: #8F8F8F;
+      line-height: 1.5;
+      margin-top: 0;
+    }
+
+    .gauge-info {
+      font-family: Rubik, sans-serif;
+      color: #8F8F8F;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="slider-button slider-button-left">&#10094;</button>
+  <button class="slider-button slider-button-right">&#10095;</button>
+
+  <div class="slider-container">
+    <div id="compliance-tracking" class="slider"></div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const jsonData = {
+        gauges: [
+          { title: "Compliance A", value: 80, issues: 2 },
+          { title: "Compliance B", value: 45, issues: 5 },
+          { title: "Compliance C", value: 60, issues: 3 },
+          { title: "Compliance D", value: 90, issues: 1 },
+          { title: "Compliance E", value: 70, issues: 4 },
+          { title: "Compliance F", value: 55, issues: 6 },
+          { title: "Compliance G", value: 100, issues: 0 }
+        ]
+      };
+
+      let currentIndex = 0;
+      let slideWidth = 0;
+      const gaugesPerSlide = 6;
+
+      function moveSlider(direction) {
+        const container = document.querySelector(".slider");
+        const slides = container.querySelectorAll(".slide");
+        const totalSlides = slides.length;
+
+        if (direction === "left" && currentIndex > 0) {
+          currentIndex--;
+        } else if (direction === "right" && currentIndex < totalSlides - 1) {
+          currentIndex++;
+        }
+
+        const offset = -currentIndex * slideWidth;
+        container.style.transform = `translateX(${offset}px)`;
+      }
+
+      function getColor(value) {
+        if (value >= 75) return "#f44336";
+        if (value >= 50) return "#ffeb3b";
+        return "#4caf50";
+      }
+
+      function createGauge(gaugeData) {
+        const gauge = document.createElement("div");
+        gauge.className = "gauge";
+
+        const svgNamespace = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNamespace, "svg");
+        svg.setAttribute("viewBox", "0 0 100 100");
+
+        const circle = document.createElementNS(svgNamespace, "circle");
+        circle.setAttribute("cx", "50");
+        circle.setAttribute("cy", "50");
+        circle.setAttribute("r", "40");
+        circle.setAttribute("fill", "none");
+        circle.setAttribute("stroke", "#f0f0f0");
+        circle.setAttribute("stroke-width", "10");
+
+        const path = document.createElementNS(svgNamespace, "path");
+        const percentage = gaugeData.value === 100 ? 0.99 : gaugeData.value / 100;
+        const startX = 50 + 40 * Math.cos(-Math.PI / 2);
+        const startY = 50 + 40 * Math.sin(-Math.PI / 2);
+        const endX = 50 + 40 * Math.cos(-Math.PI / 2 + 2 * Math.PI * percentage);
+        const endY = 50 + 40 * Math.sin(-Math.PI / 2 + 2 * Math.PI * percentage);
+        const largeArcFlag = percentage > 0.5 ? 1 : 0;
+        const pathData = `M ${startX} ${startY} A 40 40 0 ${largeArcFlag} 1 ${endX} ${endY}`;
+        path.setAttribute("d", pathData);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", getColor(gaugeData.value));
+        path.setAttribute("stroke-width", "9");
+
+        const textGroup = document.createElementNS(svgNamespace, "g");
+        textGroup.setAttribute("transform", "translate(50, 50)");
+
+        const textValue = document.createElementNS(svgNamespace, "text");
+        const valueStr = gaugeData.value.toString();
+        const valueLength = valueStr.length;
+
+        let dxOffset = 0;
+        if (valueLength <= 2) dxOffset = 8;
+        else if (valueLength === 3) dxOffset = 16;
+        else dxOffset = 20;
+
+        textValue.setAttribute("x", "0");
+        textValue.setAttribute("y", "8");
+        textValue.setAttribute("text-anchor", "middle");
+        textValue.setAttribute("class", "gauge-value-text");
+        textValue.textContent = valueStr;
+
+        const textPercentage = document.createElementNS(svgNamespace, "text");
+        textPercentage.setAttribute("x", "0");
+        textPercentage.setAttribute("y", "8");
+        textPercentage.setAttribute("dx", dxOffset.toString());
+        textPercentage.setAttribute("text-anchor", "start");
+        textPercentage.setAttribute("class", "gauge-percent-text");
+        textPercentage.textContent = "%";
+
+        textGroup.appendChild(textValue);
+        textGroup.appendChild(textPercentage);
+
+        svg.appendChild(circle);
+        svg.appendChild(path);
+        svg.appendChild(textGroup);
+
+        gauge.appendChild(svg);
+
+        const title = document.createElement("div");
+        title.className = "gauge-title";
+        title.textContent = gaugeData.title;
+        gauge.appendChild(title);
+
+        const gaugeInfo = document.createElement("div");
+        gaugeInfo.className = "gauge-info";
+        gaugeInfo.innerHTML = `<p style="line-height: 0.5;">(${gaugeData.issues} Issues)</p>`;
+        gauge.appendChild(gaugeInfo);
+
+        return gauge;
+      }
+
+      function populateGauges(gaugesData) {
+        const container = document.getElementById("compliance-tracking");
+        const totalGauges = gaugesData.length;
+        const totalSlides = Math.ceil(totalGauges / gaugesPerSlide);
+
+        for (let i = 0; i < totalSlides; i++) {
+          const slide = document.createElement("div");
+          slide.className = "slide";
+
+          for (let j = i * gaugesPerSlide; j < (i + 1) * gaugesPerSlide && j < totalGauges; j++) {
+            const gauge = createGauge(gaugesData[j]);
+            slide.appendChild(gauge);
+          }
+
+          container.appendChild(slide);
+        }
+
+        slideWidth = container.querySelector(".slide").offsetWidth;
+      }
+
+      document.querySelector(".slider-button-left").addEventListener("click", () => {
+        moveSlider("left");
+      });
+
+      document.querySelector(".slider-button-right").addEventListener("click", () => {
+        moveSlider("right");
+      });
+
+      populateGauges(jsonData.gauges);
+    });
+  </script>
+
+</body>
+</html>
