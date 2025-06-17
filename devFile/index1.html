@@ -1,248 +1,514 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Gauge Slider</title>
-  <style>
-    .slider-container {
-      overflow: hidden;
-      position: relative;
-      margin: 0;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Data Tables</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet" />
 
-    .slider {
-      display: flex;
-      transition: transform 0.8s ease;
-    }
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 500px;
+      }
 
-    .slide {
-      display: flex;
-      justify-content: space-between;
-      flex: 0 0 100%;
-      padding: 0;
-      position: relative;
-    }
+      #accordionData {
+        margin: 20px 30px;
+      }
 
-    .slider-button {
-      font-size: 40px;
-      position: absolute;
-      top: 25%;
-      background-color: rgba(0, 0, 0, 0);
-      color: gray;
-      border: none;
-      cursor: pointer;
-      z-index: 1000;
-    }
+      .accordion-item {
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+      }
+      .accordion-header {
+        position: relative;
+      }
 
-    .slider-button-left {
-      left: 0;
-    }
+      .center-scroll-buttons {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+      }
+      .accordion-button {
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: none !important;
+        height: auto;
+        color: #3d3d3d !important;
+        font-size: 18px;
+        background-color: #f8f9fa !important;
+        margin: -1px;
+        z-index: 2;
+        position: relative;
+      }
+      .accordion-button::after {
+        display: none;
+      }
+      .accordion-num {
+        color: #7a7a7a;
+      }
 
-    .slider-button-right {
-      right: 0;
-    }
+      .scroll-btn {
+        background: transparent;
+        border: none;
+        z-index: 5;
+        width: 30px;
+        height: 40px;
+        margin-left: 2px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .gauge {
-      text-align: center;
-      margin: 5px;
-      flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #f5f5f5;
-      border-radius: 25px;
-      height: 190px;
-      width: 200px;
-    }
+      .accordion-button.collapsed {
+        border-radius: 0.75rem !important;
+        border: 1px solid #f8f9fa;
+      }
 
-    .gauge svg {
-      width: 110px;
-      height: 110px;
-    }
+      .accordion-button:not(.collapsed) {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+      }
 
-    .gauge-value-text {
-      font-size: 23px;
-      font-weight: bold;
-      color: #3D3D3D;
-    }
+      .accordion-body {
+        padding: 0%;
+        background-color: #fff;
+      }
 
-    .gauge-percent-text {
-      font-size: 12px;
-      line-height: 0;
-      color: #3D3D3D;
-    }
+      .table-wrapper {
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
 
-    .gauge-title {
-      font-family: Rubik, sans-serif;
-      margin-top: 20px;
-      color: #8F8F8F;
-      line-height: 1.5;
-      margin-top: 0;
-    }
+      .table-horizontal-scroll {
+        overflow-x: auto;
+        position: relative;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
 
-    .gauge-info {
-      font-family: Rubik, sans-serif;
-      color: #8F8F8F;
-    }
-  </style>
-</head>
-<body>
+      .table-horizontal-scroll::-webkit-scrollbar {
+        display: none;
+      }
 
-  <button class="slider-button slider-button-left">&#10094;</button>
-  <button class="slider-button slider-button-right">&#10095;</button>
+      table {
+        width: max-content;
+        border-collapse: collapse;
+        font-family: Rubik;
+      }
 
-  <div class="slider-container">
-    <div id="compliance-tracking" class="slider"></div>
-  </div>
+      th,
+      td {
+        padding: 4px 10px;
+        text-align: center;
+        white-space: nowrap;
+        width: 90px;
+      }
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
+      th {
+        cursor: pointer;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #3d3d3d;
+        background-color: #f5f5f5;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      td {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      tbody > tr {
+      }
+
+      th i {
+        margin-left: 5px;
+        cursor: pointer;
+        font-size: 0.8em;
+        color: #888;
+      }
+
+      .sticky-col {
+        position: sticky;
+        background-color: white;
+        z-index: 2;
+        box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+      }
+
+      .sticky-col-1 {
+        left: 0;
+        z-index: 3;
+      }
+
+      .sticky-col-2 {
+        left: 140px;
+      }
+
+      .sticky-col-3 {
+        left: 230px;
+      }
+
+      .sticky-col-4 {
+        left: 330px;
+      }
+
+      .sticky-col-5 {
+        left: 430px;
+      }
+      .sticky-col-6 {
+        left: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div class="accordion" id="accordionData"></div>
+    </div>
+
+    <script>
       const jsonData = {
-        gauges: [
-          { title: "Compliance A", value: 80, issues: 2 },
-          { title: "Compliance B", value: 45, issues: 5 },
-          { title: "Compliance C", value: 60, issues: 3 },
-          { title: "Compliance D", value: 90, issues: 1 },
-          { title: "Compliance E", value: 70, issues: 4 },
-          { title: "Compliance F", value: 55, issues: 6 },
-          { title: "Compliance G", value: 100, issues: 0 }
-        ]
+        CDG: {
+          Compliance: "c1",
+          Delays: "d1",
+          Provisioning: "p1",
+          Quality: "q1",
+          Safety: "s1",
+          Unclassified: "u1",
+          city: "Paris",
+          caterer: "Caterer1",
+          closedCount: "cc1",
+          country: "France",
+          totalCount: "t1",
+          unresolvedCount: "ut1",
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
+        FCO: {
+          Compliance: 1,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 1,
+          Safety: 0,
+          Unclassified: 0,
+          city: "Rome",
+          caterer: "Caterer2",
+          closedCount: 0,
+          country: "Italy",
+          totalCount: 2,
+          unresolvedCount: 2,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
+        NCE: {
+          Compliance: 0,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 1,
+          Safety: 0,
+          Unclassified: 0,
+          city: "Nice",
+          caterer: "Caterer3",
+          closedCount: 0,
+          country: "France",
+          totalCount: 1,
+          unresolvedCount: 1,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test5: "test5",
+          test4: "test4",
+          test6: "test6",
+        },
+        YQB: {
+          Compliance: 0,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 0,
+          Safety: 0,
+          Unclassified: 10,
+          city: "Quebec City",
+          caterer: "Caterer4",
+          closedCount: 0,
+          country: "Canada",
+          totalCount: 10,
+          unresolvedCount: 10,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
+        YUL: {
+          Compliance: 0,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 0,
+          Safety: 0,
+          Unclassified: 37,
+          city: "Montreal",
+          caterer: "Caterer5",
+          closedCount: 0,
+          country: "Canada",
+          totalCount: 37,
+          unresolvedCount: 37,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
+        YVR: {
+          Compliance: 0,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 1,
+          Safety: 0,
+          Unclassified: 1,
+          city: "Vancouver",
+          caterer: "Caterer6",
+          closedCount: 0,
+          country: "Canada",
+          totalCount: 2,
+          unresolvedCount: 2,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
+        YXU: {
+          Compliance: 0,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 0,
+          Safety: 0,
+          Unclassified: 5,
+          city: "London",
+          caterer: "Caterer7",
+          closedCount: 0,
+          country: "Canada",
+          totalCount: 5,
+          unresolvedCount: 5,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
+        YYZ: {
+          Compliance: 0,
+          Delays: 0,
+          Provisioning: 0,
+          Quality: 0,
+          Safety: 0,
+          Unclassified: 79,
+          city: "Toronto",
+          caterer: "Caterer8",
+          closedCount: 0,
+          country: "Canada",
+          totalCount: 79,
+          unresolvedCount: 79,
+          test1: "test1",
+          test2: "test2",
+          test3: "test3",
+          test4: "test4",
+          test5: "test5",
+          test6: "test6",
+        },
       };
 
-      let currentIndex = 0;
-      let slideWidth = 0;
-      const gaugesPerSlide = 6;
-
-      function moveSlider(direction) {
-        const container = document.querySelector(".slider");
-        const slides = container.querySelectorAll(".slide");
-        const totalSlides = slides.length;
-
-        if (direction === "left" && currentIndex > 0) {
-          currentIndex--;
-        } else if (direction === "right" && currentIndex < totalSlides - 1) {
-          currentIndex++;
-        }
-
-        const offset = -currentIndex * slideWidth;
-        container.style.transform = `translateX(${offset}px)`;
+      const groupedByCountry = {};
+      for (const station in jsonData) {
+        const entry = jsonData[station];
+        const country = entry.country;
+        if (!groupedByCountry[country]) groupedByCountry[country] = [];
+        groupedByCountry[country].push({ station, ...entry });
       }
 
-      function getColor(value) {
-        if (value >= 75) return "#f44336";
-        if (value >= 50) return "#ffeb3b";
-        return "#4caf50";
+      const accordion = document.getElementById("accordionData");
+      let index = 0;
+
+      for (const country in groupedByCountry) {
+        const data = groupedByCountry[country];
+        const preferredOrder = [
+          "actions",
+          "station",
+          "city",
+          "caterer",
+          "unresolvedCount",
+          "closedCount",
+          "totalCount",
+          "Delays",
+          "Quality",
+          "Compliance",
+          "Provisioning",
+          "Unclassified",
+          "Safety",
+        ];
+        const sampleEntry = data[0];
+        const dynamicKeys = Object.keys(sampleEntry).filter(
+          (key) =>
+            !["country"].concat(preferredOrder).includes(key) &&
+            key !== "actions"
+        );
+
+        const finalKeys = [...preferredOrder, ...dynamicKeys, "actions"];
+
+        const sortableKeys = ["station", "city", "caterer"];
+
+        const thead = finalKeys
+          .map((key, i) => {
+            const stickyClass = i < 6 ? `sticky-col sticky-col-${i + 1}` : "";
+            const sortableClass = sortableKeys.includes(key.toLowerCase())
+              ? "sortable"
+              : "";
+            let label = key.charAt(0).toUpperCase() + key.slice(1);
+            if (key === "station") label = "Station Code";
+            if (key === "unresolvedCount") label = "Unresolved";
+            if (key === "closedCount") label = "Closed";
+            if (key === "totalCount") label = "Total";
+            if (key === "actions") label = "Action";
+            return `
+          <th class="${sortableClass} ${stickyClass}" data-key="${key}" style="width: 50px;">
+            <div class="d-inline-flex align-items-center gap-1 justify-content-center">
+              <span>${label}</span>
+              ${sortableClass ? `<i class="fas fa-sort"></i>` : ""}
+            </div>
+          </th>`;
+          })
+          .join("");
+
+        const tbody = data
+          .map(
+            (row) => `
+        <tr>
+          ${finalKeys
+            .map((key, i) => {
+              const stickyClass = i < 6 ? `sticky-col sticky-col-${i + 1}` : "";
+              let value = row[key] ?? "";
+              if (key === "actions") {
+                const paramObj = {
+                  action: "NavigateRelatedIssues",
+                  station: row.station,
+                };
+                const paramJSON = JSON.stringify(paramObj).replace(/"/g, '\\"');
+
+                value = `<button type="button" 
+                
+               onclick='FileMaker.PerformScript("RandomOperations", "${paramJSON}")'   
+                
+              
+
+
+ class="btn btn-sm">
+    <i class="fa-solid fa-arrow-right" style="transform: rotate(300deg); color: #641BFD;"></i>
+  </button>`;
+              }
+
+              return `<td class="${stickyClass}">${value}</td>`;
+            })
+            .join("")}
+        </tr>`
+          )
+          .join("");
+
+        const accordionItem = document.createElement("div");
+        accordionItem.className = "accordion-item";
+        const collapseId = `collapse-${index}`;
+        const countryId = `country-${index}`;
+        accordionItem.innerHTML = `
+        <h2 class="accordion-header" id="${countryId}">
+          <div class="d-flex align-items-center justify-content-between w-100" style="background-color: #f8f9fa;">
+            <button class="accordion-button d-flex align-items-center gap-3" type="button"
+              data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-controls="${collapseId}">
+              <span class="fw-semibold">${country}</span>
+              <span class="accordion-num text-muted">(${data.length})</span>
+            </button>
+            <button class="scroll-btn btn btn-sm" type="button" data-direction="right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </h2>
+        <div id="${collapseId}" class="accordion-collapse collapse show" aria-labelledby="${countryId}">
+          <div class="accordion-body">
+            <div class="table-wrapper">
+              <div class="table-horizontal-scroll">
+                <table class="sortable-table" data-country="${country}">
+                  <thead><tr>${thead}</tr></thead>
+                  <tbody>${tbody}</tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        accordion.appendChild(accordionItem);
+        index++;
       }
 
-      function createGauge(gaugeData) {
-        const gauge = document.createElement("div");
-        gauge.className = "gauge";
-
-        const svgNamespace = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(svgNamespace, "svg");
-        svg.setAttribute("viewBox", "0 0 100 100");
-
-        const circle = document.createElementNS(svgNamespace, "circle");
-        circle.setAttribute("cx", "50");
-        circle.setAttribute("cy", "50");
-        circle.setAttribute("r", "40");
-        circle.setAttribute("fill", "none");
-        circle.setAttribute("stroke", "#f0f0f0");
-        circle.setAttribute("stroke-width", "10");
-
-        const path = document.createElementNS(svgNamespace, "path");
-        const percentage = gaugeData.value === 100 ? 0.99 : gaugeData.value / 100;
-        const startX = 50 + 40 * Math.cos(-Math.PI / 2);
-        const startY = 50 + 40 * Math.sin(-Math.PI / 2);
-        const endX = 50 + 40 * Math.cos(-Math.PI / 2 + 2 * Math.PI * percentage);
-        const endY = 50 + 40 * Math.sin(-Math.PI / 2 + 2 * Math.PI * percentage);
-        const largeArcFlag = percentage > 0.5 ? 1 : 0;
-        const pathData = `M ${startX} ${startY} A 40 40 0 ${largeArcFlag} 1 ${endX} ${endY}`;
-        path.setAttribute("d", pathData);
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", getColor(gaugeData.value));
-        path.setAttribute("stroke-width", "9");
-
-        const textGroup = document.createElementNS(svgNamespace, "g");
-        textGroup.setAttribute("transform", "translate(50, 50)");
-
-        const textValue = document.createElementNS(svgNamespace, "text");
-        const valueStr = gaugeData.value.toString();
-        const valueLength = valueStr.length;
-
-        let dxOffset = 0;
-        if (valueLength <= 2) dxOffset = 8;
-        else if (valueLength === 3) dxOffset = 16;
-        else dxOffset = 20;
-
-        textValue.setAttribute("x", "0");
-        textValue.setAttribute("y", "8");
-        textValue.setAttribute("text-anchor", "middle");
-        textValue.setAttribute("class", "gauge-value-text");
-        textValue.textContent = valueStr;
-
-        const textPercentage = document.createElementNS(svgNamespace, "text");
-        textPercentage.setAttribute("x", "0");
-        textPercentage.setAttribute("y", "8");
-        textPercentage.setAttribute("dx", dxOffset.toString());
-        textPercentage.setAttribute("text-anchor", "start");
-        textPercentage.setAttribute("class", "gauge-percent-text");
-        textPercentage.textContent = "%";
-
-        textGroup.appendChild(textValue);
-        textGroup.appendChild(textPercentage);
-
-        svg.appendChild(circle);
-        svg.appendChild(path);
-        svg.appendChild(textGroup);
-
-        gauge.appendChild(svg);
-
-        const title = document.createElement("div");
-        title.className = "gauge-title";
-        title.textContent = gaugeData.title;
-        gauge.appendChild(title);
-
-        const gaugeInfo = document.createElement("div");
-        gaugeInfo.className = "gauge-info";
-        gaugeInfo.innerHTML = `<p style="line-height: 0.5;">(${gaugeData.issues} Issues)</p>`;
-        gauge.appendChild(gaugeInfo);
-
-        return gauge;
-      }
-
-      function populateGauges(gaugesData) {
-        const container = document.getElementById("compliance-tracking");
-        const totalGauges = gaugesData.length;
-        const totalSlides = Math.ceil(totalGauges / gaugesPerSlide);
-
-        for (let i = 0; i < totalSlides; i++) {
-          const slide = document.createElement("div");
-          slide.className = "slide";
-
-          for (let j = i * gaugesPerSlide; j < (i + 1) * gaugesPerSlide && j < totalGauges; j++) {
-            const gauge = createGauge(gaugesData[j]);
-            slide.appendChild(gauge);
-          }
-
-          container.appendChild(slide);
-        }
-
-        slideWidth = container.querySelector(".slide").offsetWidth;
-      }
-
-      document.querySelector(".slider-button-left").addEventListener("click", () => {
-        moveSlider("left");
+      document.addEventListener("click", function (e) {
+        const th = e.target.closest("th[data-key]");
+        if (!th) return;
+        const key = th.dataset.key;
+        const table = th.closest("table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const ascending = th.dataset.order !== "asc";
+        th.dataset.order = ascending ? "asc" : "desc";
+        const colIndex = Array.from(th.parentNode.children).indexOf(th);
+        rows.sort((a, b) => {
+          const aText = a.children[colIndex].textContent.trim().toLowerCase();
+          const bText = b.children[colIndex].textContent.trim().toLowerCase();
+          return ascending
+            ? aText.localeCompare(bText)
+            : bText.localeCompare(aText);
+        });
+        tbody.innerHTML = "";
+        rows.forEach((row) => tbody.appendChild(row));
       });
 
-      document.querySelector(".slider-button-right").addEventListener("click", () => {
-        moveSlider("right");
+      // Scroll buttons
+      document.addEventListener("click", function (e) {
+        if (e.target.closest(".scroll-btn")) {
+          const btn = e.target.closest(".scroll-btn");
+          const direction = btn.getAttribute("data-direction");
+          const container = btn
+            .closest(".accordion-item")
+            .querySelector(".table-horizontal-scroll");
+          if (!container) return;
+          container.scrollBy({
+            left: direction === "left" ? -200 : 200,
+            behavior: "smooth",
+          });
+        }
       });
+    </script>
 
-      populateGauges(jsonData.gauges);
-    });
-  </script>
-
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

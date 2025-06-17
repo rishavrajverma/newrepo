@@ -1,0 +1,14 @@
+
+
+gauges: [
+          { issues: 0, title: "Delays", value: 0 },
+          { issues: 3, title: "Quality", value: 1.5 },
+          { issues: 1, title: "Compliance", value: 0.5 },
+          { issues: 1, title: "Provisioning", value: 0.5 },
+          { issues: 199, title: "Unclassified", value: 97.1 },
+          { issues: 1, title: "Safety", value: 0.5 },
+          { issues: 0, title: "Test", value: 0 },
+          { issues: 2, title: "Monitoring", value: 25 },
+          { issues: 4, title: "Performance", value: 40 },
+          { issues: 1, title: "Backup", value: 60 },
+        ],
